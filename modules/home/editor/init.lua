@@ -11,7 +11,7 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.undofile = true
 vim.opt.mouse = ""
-vim.opt.completeopt = { "menu", "menuone", "noselect", "popup" }
+vim.opt.completeopt = { "menu", "menuone", "noselect", "popup", "fuzzy" }
 
 vim.api.nvim_create_autocmd("FileType", {
   callback = function(args)
@@ -27,11 +27,24 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
     local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
-    if client:supports_method("textDocument/completion") then
-      vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
+    if not client:supports_method("textDocument/completion") then
+      return
     end
+    local cp = client.server_capabilities.completionProvider
+    if cp then
+      local chars = cp.triggerCharacters or {}
+      for ch in ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"):gmatch(".") do
+        chars[#chars + 1] = ch
+      end
+      cp.triggerCharacters = chars
+    end
+    vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
   end,
 })
+
+vim.keymap.set("i", "<C-Space>", function()
+  vim.lsp.completion.get()
+end)
 
 vim.lsp.config("lua_ls", {
   cmd = { "lua-language-server" },
@@ -61,7 +74,18 @@ vim.lsp.config("nixd", {
 vim.lsp.config("rust_analyzer", {
   cmd = { "rust-analyzer" },
   filetypes = { "rust" },
-  root_markers = { "Cargo.toml", ".git" },
+  root_markers = { { "Cargo.lock" }, { "Cargo.toml", ".git" } },
+  settings = {
+    ["rust-analyzer"] = {
+      completion = {
+        autoimport = { enable = true },
+      },
+      imports = {
+        granularity = { enforce = true, group = "module" },
+        prefix = "crate",
+      },
+    },
+  },
 })
 vim.lsp.config("clangd", {
   cmd = { "clangd" },
@@ -152,7 +176,6 @@ vim.lsp.enable({
   "ocamllsp",
   "dockerls",
 })
-
 
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files (fd)" })

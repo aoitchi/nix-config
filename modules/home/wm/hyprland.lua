@@ -34,6 +34,13 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"), { loc
 hl.monitor({ output = "DP-3", mode = "preferred", position = "0x0", scale = 1.25 })
 hl.monitor({ output = "eDP-1", mode = "preferred", position = "2600x1152", scale = 1.5 })
 
+hl.config({
+  input = {
+    kb_layout = "us",
+    kb_options = "ctrl:nocaps",
+  },
+})
+
 hl.on("hyprland.start", function()
   hl.exec_cmd("fcitx5 -d")
 end)
