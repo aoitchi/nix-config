@@ -3,6 +3,13 @@
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
   programs.hyprland.enable = true;
 
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    pulse.enable = true;
+  };
+
   i18n.inputMethod = {
     enable = true;
     type = "fcitx5";
