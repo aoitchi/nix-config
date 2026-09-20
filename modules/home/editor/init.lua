@@ -77,6 +77,9 @@ vim.lsp.config("rust_analyzer", {
   root_markers = { { "Cargo.lock" }, { "Cargo.toml", ".git" } },
   settings = {
     ["rust-analyzer"] = {
+      files = {
+        watcher = "server"
+      },
       completion = {
         autoimport = { enable = true },
       },
